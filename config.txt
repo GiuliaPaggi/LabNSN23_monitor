@@ -1,0 +1,8 @@
+#Specify the paths for :
+# - file in which the data are being written
+# - folder in which the plots will be saved every 30s  
+
+
+[path]
+DataFilePath = C:\Users\Giulia Paggi\Desktop\tutorato\Tutorato-Bologna\monitor\File.txt
+PlotFolderPath = C:\Users\Giulia Paggi\Desktop\tutorato\Tutorato-Bologna\monitor\Plots\

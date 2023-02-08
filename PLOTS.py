@@ -27,9 +27,6 @@ def plot_1D(figure, ax, ch, entries, title, run_number,  xlabel, ylabel, chamber
     
     title : string
         Title of the plot
-        
-    run_number : string
-        Run number to complete the title of the plot 
        
     xlabel : string
         Label of x axis
@@ -48,13 +45,13 @@ def plot_1D(figure, ax, ch, entries, title, run_number,  xlabel, ylabel, chamber
     None.
     
     """
-    run_title = "Run " + str(run_number) 
+
     ax.cla()
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_xticks(xticks)
     ax.bar(ch,entries, width =1, color = '#1f77b4', align ='center')
-    ax.set_title(run_title + ' - ' +datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +title)
+    ax.set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +title)
     plt.pause(.0001)
     plt.show()
 
@@ -111,7 +108,7 @@ def plot_2D(figure, ax, entries, title, run_number, xlabel, ylabel, chamber_numb
     plt.show()
 
 
-def save_1D(path, ch, entries, title, namerun, xlabel, ylabel, chamber_number, xticks=[0, 8, 16, 24, 32, 40, 48, 56, 63]):
+def save_1D(path, ch, entries, title, xlabel, ylabel, chamber_number, xticks=[0, 8, 16, 24, 32, 40, 48, 56, 63]):
     """    
     The function plots and saves as .PNG the a 1D histogram given the entries of each bin.  
     
@@ -130,9 +127,6 @@ def save_1D(path, ch, entries, title, namerun, xlabel, ylabel, chamber_number, x
     
     title : string
         Title of the plot
-        
-    namerun : string
-        Name of the run to complete the title of the plot 
     
     xlabel : string
         Label of x axis
@@ -155,10 +149,10 @@ def save_1D(path, ch, entries, title, namerun, xlabel, ylabel, chamber_number, x
     fig, ax = plt.subplots(1, 1, figsize = (15, 10))
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.set_xticks(xticks)
+    #ax.set_xticks(xticks)
     ax.bar(ch,entries, width =1, color = '#1f77b4', align ='center')
-    ax.set_title(namerun + ' - ' + chamber_number + ' - '+datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +title)
-    fig.savefig(path +chamber_number+'_'+title+'.PNG') 
+    ax.set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +title)
+    fig.savefig(path+title+'.PNG') 
     plt.close()
     
 def save_2D(path, entries, title, namerun , xlabel, ylabel, chamber_number):
@@ -206,11 +200,11 @@ def save_2D(path, entries, title, namerun , xlabel, ylabel, chamber_number):
     ax.set_yticks([1, 2, 3, 4])
     m = ax.pcolormesh(entries, vmin = scale_min, vmax = scale_max) 
     plt.colorbar(m, ax = ax)
-    ax.set_title(namerun + ' - ' + chamber_number + ' - '+ datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +title)
-    fig.savefig(path +chamber_number+'_'+title+'.PNG') 
+    ax.set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +title)
+    fig.savefig(path +'_'+title+'.PNG') 
     plt.close()
 
-def make_monitor( path, image_names , monitor_name , chamber_number):
+def make_monitor( path, image_names , monitor_name, chamber_number):
     """
     The function groups together in the same image the images passed via the image_names list, and saves the final result
     
@@ -261,7 +255,7 @@ def make_monitor( path, image_names , monitor_name , chamber_number):
     os.chdir(original_path)
     
     
-def update_monitor(path, placeholder, image_names, rate_, rate_scint, rate_CH7, rate_CH8, list_rate_scint, list_rate_CH7, list_rate_CH8, double_scint):
+def update_monitor(path, placeholder, image_names, av_rate ,rate_, p0_count, p1_count, p2_count, list_rate, event_number):
     """
     The function updates the webpage writing information about the rate, plus the relative plots, and displays the images passed through image_names
     
@@ -276,29 +270,26 @@ def update_monitor(path, placeholder, image_names, rate_, rate_scint, rate_CH7, 
     image_names : list
         list of images to be shown in the monitor window.
     
+    av_rate : string
+        rate from the beginning of the run
+    
     rate_ : string
         rate in the last 30s of data taking
     
-    rate_scint : string
+    p0_count : string
         rate of scintillator in the last 30s of data taking
         
-    rate_CH7: string
+    p1_count : string
         rate of MiniDT 7 in the last 30s of data taking
         
-    rate_CH8 : string
+    p2_count : string
         rate of MiniDT 8 in the last 30s of data taking
         
-    list_rate_scint : list
+    list_rate : list
         list of the previous value of the scintillator rate to be ploted
-
-    list_rate_CH7 : list
-        list of the previous value of chamber 7 rate to be ploted
         
-    list_rate_CH8 : list
-        list of the previous value of chameber 8 rate to be ploted
-    
-    double_scint: string
-        ratio of double scintillator hits wrt events
+    event_number : string
+        string of total number of triggers 
         
     Returns
     -------
@@ -313,29 +304,34 @@ def update_monitor(path, placeholder, image_names, rate_, rate_scint, rate_CH7, 
     #updates monitor web page
     with placeholder.container():
 
-        rate_col, fig_col1, fig_col2 = st.columns([1.5, 2, 3])
-        with rate_col:
-            st.text("\n\n\n\n\n")
-            st.markdown("#### Rate: "+rate_+" Hz")
-            st.markdown("#### Scintillator Rate: "+rate_scint+" Hz")
-            st.line_chart(list_rate_scint, height= 170)
-            st.markdown("#### Double scint/events: "+double_scint)
-            st.markdown("#### MiniDT 7 Rate: "+rate_CH7+" Hz")
-            st.line_chart(list_rate_CH7, height= 170)
-            st.markdown("#### MiniDT 8 Rate: "+rate_CH8+" Hz")
-            st.line_chart(list_rate_CH8, height=170)
-        with fig_col1:
-            st.markdown("#### Occupancy Monitor")
-            c= st.container()
-            c.image(images[0], caption='Chamber 7 - Occupancy monitor')  #width = 600
-            c.image(images[1], caption='Chamber 8 - Occupancy monitor')
+        fig_col0, fig_col1, fig_col2 = st.columns([ 3, 3, 3])
+        
+        #st.text("\n\n\n\n\n")
 
-        if len(images) == 4:
-            with fig_col2:
-                st.markdown("#### Timebox and Scintillator Occupancy")
-                c= st.container()
-                c.image(images[2], caption='Chamber 7 - Scinitllator events monitor')        #, width=900
-                c.image(images[3], caption='Chamber 8 - Scinitllator events monitor')
+        with fig_col0:
+            st.markdown("#### P0   -   Total count: "+ p0_count)
+            c= st.container()
+            c.image(images[0])
+            st.markdown("#")
+            st.markdown("### Total n of triggers: " + event_number)
+            st.markdown("### Average Rate: "+av_rate+" Hz")
+            st.markdown("### Latest 100s Rate: "+rate_+" Hz")
+
+        with fig_col1:
+            st.markdown("#### P1   -   Total count: "+ p1_count)
+            c= st.container()
+            c.image(images[1])
+            st.markdown('#### Rate over time ')
+            st.line_chart(list_rate, height = 200)
+
+
+        with fig_col2:
+            st.markdown("#### P2   -   Total count: "+ p2_count)
+            c= st.container()
+            c.image(images[2])
+
+
+
     os.chdir( original_path)
     
 
