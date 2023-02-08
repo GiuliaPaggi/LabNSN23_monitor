@@ -35,6 +35,10 @@ else :
 data_path = config.get('path', 'DataFilePath')
 plot_path = config.get('path', 'PlotFolderPath')
 
+if not os.path.exists(plot_path):
+    os.mkdir(plot_path)          
+
+
 
 
 # ----- check if the file exists, close the program if it does not -----
