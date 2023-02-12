@@ -8,7 +8,7 @@ import streamlit as st
 # ------ define drawing function ------
 def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_, planes_count, list_rate, event_number):
     """
-    
+    This function draws the plots and arrange the monitor webpage layout
 
     Parameters
     ----------
