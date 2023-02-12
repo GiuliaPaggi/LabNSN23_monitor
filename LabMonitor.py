@@ -1,63 +1,134 @@
 import time, os, sys
 import matplotlib.pyplot as plt
 from datetime import datetime
-import configparser
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 import streamlit as st
-import PLOTS
+
+# ------ define drawing function ------
+def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_, planes_count, list_rate, event_number):
+    """
+    
+
+    Parameters
+    ----------
+    placeholder : streamlit container
+        a container that holds a single element, used to replace same element
+        
+    ch : list
+         X bins of the bar plot
+         
+    figs: lis of figure
+        list of figures in which the subplots are drawn, format [ p0, p1, p2, rate]
+        
+    ax : AxesSubplot
+        list of axes of the subplot in which the function draws, format [ p0, p1, p2, rate]
+        
+    planes_list : list
+        list of histo with the planes entries, format [ p0, p1, p2]
+    
+    titles : list
+        list of titles of the histos, format [ p0, p1, p2]
+        
+    av_rate : string
+        average rate 
+        
+    rate_ : string
+        istantaneous rate
+        
+    planes_count : list
+        list of strings with the total number of entries
+        
+    list_rate : list
+        list with istantaneous rate of 100 previous refresh
+        
+    event_number : string
+        string of the event number
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    xlabel = 'Time difference (ns)'
+    ylabel = 'Entries'
+
+    axes[0].set_xlabel(xlabel)
+    axes[0].set_ylabel(ylabel)
+    axes[0].bar(ch, planes_list[0], width =1, color = '#1f77b4', align ='center')
+    axes[0].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[0])
+    
+    
+    axes[1].set_xlabel(xlabel)
+    axes[1].set_ylabel(ylabel)
+    axes[1].bar(ch, planes_list[1], width =1, color = '#1f77b4', align ='center')
+    axes[1].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[1])
+    
+    axes[2].set_xlabel(xlabel)
+    axes[2].set_ylabel(ylabel)
+    axes[2].bar(ch, planes_list[2], width =1, color = '#1f77b4', align ='center')
+    axes[2].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[2])
+    
+    axes[3].set_xlabel('# of refresh')
+    axes[3].set_ylabel('Rate')
+    axes[3].plot( range(0, len(list_rate)), list_rate, color = '#1f77b4')
+    
+    with placeholder.container():
+        #st.title('Laboratory N&SN Physics 2 ')
+        rate_col, planes_col0, planes_col1, planes_col2 = st.columns([1, 1, 1, 1])
+        with rate_col:
+            st.markdown('#### Rate over time ')
+            st.pyplot(figs[3])
+            st.markdown("### Total n of triggers: " + event_number)
+            st.markdown("### Average Rate: "+av_rate+" Hz")
+            st.markdown("### Latest 100s Rate: "+rate_+" Hz")
+        with planes_col0:
+                st.markdown("#### P0   -   Total count: "+ planes_count[0])
+                st.pyplot(figs[0])
+        with planes_col1:
+                st.markdown("#### P1   -   Total count: "+ planes_count[1])
+                st.pyplot(figs[1])
+        with planes_col2:
+                st.markdown("#### P2   -   Total count: "+ planes_count[2])
+                st.pyplot(figs[2])
+                
 
 
-#plt.switch_backend('TkAgg')
 
 # ------ set up webpage ------
 st.set_page_config(
     page_title="Monitor",
-    page_icon=':flag-bo:',
+    page_icon='	:stars:',
     layout="wide",
 )
 monitor = st.empty()
 
 refresh_time = 5       # seconds
 
-# ----- import path from configuration file -----
-config = configparser.ConfigParser()
-config_file = './config.txt'                  
-if os.path.exists(config_file): 
-    config.read(config_file)     
-else : 
-    print( 'Select the configuration file', flush=True)
-    Tk().withdraw()
-    config_file = askopenfilename()
-    config.read(config_file)
-
-
-data_path = config.get('path', 'DataFilePath')
-plot_path = config.get('path', 'PlotFolderPath')
-
-if not os.path.exists(plot_path):
-    os.mkdir(plot_path)          
-
-
-
-
-# ----- check if the file exists, close the program if it does not -----
-if os.path.exists(data_path):
-    f = open(data_path, 'r')
-    print(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+ ' Reading ' + data_path )
-
+# ------ find valid file to read ------
+if len(sys.argv) > 1:
+    file_name = './'+sys.argv[1]
+    if not os.path.exists(file_name):
+        print('This file does not exist! Select the data file', flush=True)
+        Tk().withdraw()
+        file_name = askopenfilename()
 else:
-    print("Error, output data file "+data_path+" does not exists! Press CTRL-C to exit")
-    st.write("Error, output data file does not exists! Exiting...")
-    st.stop()
-    sys.exit()
+    print('Select the data file', flush=True)
+    Tk().withdraw()
+    file_name = askopenfilename()    
+        
+f = open(file_name, 'r')
+print(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+ ' Reading ' + file_name )
 
 
-#if show_plt:
-    # ----- set interactive mode so that pyplot.show() displays the figures and immediately returns ----
-#    plt.ion() 
-    # fig, ax = plt.subplots(4, 2, figsize = (15, 10))
-    # fig_timebox, ax_timebox = plt.subplots(4, 3, figsize = (15, 10))
+fig0, ax0 = plt.subplots(1, 1, figsize = (15, 15))
+fig1, ax1 = plt.subplots(1, 1, figsize = (15, 15))
+fig2, ax2 = plt.subplots(1, 1, figsize = (15, 15))
+fig3, ax3 = plt.subplots(1, 1, figsize = (15, 10))
+
+figures = [fig0, fig1, fig2, fig3]
+axis = [ax0, ax1, ax2, ax3]
 
 # ------ number of event per plane ------
 planes_events = [0]*3
@@ -76,16 +147,6 @@ inst_rate = 0
 rate_info = [0, 0]          # [n evento, tempo]
 rate_over_time = [0]
 
-
-# ------ read file ------
-
-# find the size of the file and set pointer to the end
-#st_results = os.stat(data_path)
-#st_size = st_results[6]
-#f.seek(st_size)
-
-
-
 try:
     
     while( True ):        
@@ -98,7 +159,7 @@ try:
         if not line:
             print('No new lines to be read.')
             # print(time.time() - os.path.getmtime(filename))
-            if time.time() - os.path.getmtime(data_path) > 120 :
+            if time.time() - os.path.getmtime(file_name) > 120 :
                 print ('\nReading stopped.\n') 
                 f.close()
                 os._exit(0)
@@ -121,58 +182,38 @@ try:
             
             
             for i in range(0, len(line)): 
-
                 #convert to decimal
                 p0_value = int ( line[i].split(' ')[3] , 16) 
                 p1_value = int ( line[i].split(' ')[4] , 16)
                 p2_value = int ( line[i].split(' ')[5] , 16)
                 
-                #fill the histos
+                #fill the histos - istogramma con sottomultiplo di 4096-> uso il valore/ n come indice
                 if p0_value != 4095:
-                # istogramma con sottomultiplo di 4096-> uso il valore/ n come indice
-                    #print('p0', p0_value)
                     hist_p0[round(p0_value*.125)] +=1
-                    #print(hist_p0)
                 if p1_value != 4095:    
                     hist_p1[round(p1_value*.125)] +=1
-                    #print('p1', p1_value)
                 if p2_value != 4095:    
                     hist_p2[round(p2_value*.125)] +=1
-                    #print('p2', p2_value)
 
 
             #compute rate            
             average_rate = round ( int(line[len(line)-1].split(' ')[1]) / float(line[len(line)-1].split(' ')[2]) , 2)
-            
             elapsed_time =  ( float(line[len(line)-1].split(' ')[2]) - rate_info[1])
-            #print('elapsed time:', elapsed_time)
+ 
             if  elapsed_time > refresh_time*2:
                 inst_rate = round ( ( int(line[len(line)-1].split(' ')[1]) - rate_info[0])/ elapsed_time , 2)
-                #print(inst_rate)
+
                 if len(rate_over_time) > 99:
                     rate_over_time.pop(0)
                     rate_over_time.append(inst_rate)
-                    #print('più di 100 eventi')
-                    #print(inst_rate)
+                    
                 else:
                     rate_over_time.append(inst_rate)
-                    #print(inst_rate)
+ 
                 rate_info[1] = float(line[len(line)-1].split(' ')[2])
                 rate_info[0] = int(line[len(line)-1].split(' ')[1])
             
-            
-            # display plots with matplotlib
-            #if show_plt:
-            #    PLOTS.plot_1D(fig, ax[0][0], x_axis, hist_p0, "P0 Entries", "Channel", "Entries", 'P0')
-            #    PLOTS.plot_1D(fig, ax[0][0], x_axis, hist_p1, "P1 Entries", "Channel", "Entries", 'P1')
-            #    PLOTS.plot_1D(fig, ax[0][0], x_axis, hist_p2, "P2 Entries", "Channel", "Entries", 'P2')
-            # save plots in folder and update monitor web page 
-            PLOTS.save_1D(plot_path, x_axis, hist_p0, "P0", "Channel", "Entries", 'P0')
-            PLOTS.save_1D(plot_path, x_axis, hist_p1, "P1", "Channel", "Entries", 'P1')
-            PLOTS.save_1D(plot_path, x_axis, hist_p2, "P2", "Channel", "Entries", 'P2')
-                        
-            PLOTS.update_monitor(plot_path, monitor, ['P0.PNG', 'P1.PNG', 'P2.PNG'], str(average_rate), str(inst_rate), str(sum(hist_p0)), str(sum(hist_p1)), str(sum(hist_p2)), rate_over_time, line[len(line)-1].split(' ')[1])
-                     
+            labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P0', 'P1', 'P2'], str(average_rate), str(inst_rate), [str(sum(hist_p0)), str(sum(hist_p1)), str(sum(hist_p2))], rate_over_time, line[len(line)-1].split(' ')[1])        
                 
 except KeyboardInterrupt:
     print ('\nReading stopped.\n') 
