@@ -51,21 +51,31 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
 
     """
     
-    xlabel = 'Time difference (ns)'
+    xlabel = 'TDC count'
     ylabel = 'Entries'
+    xticks = [ i for i in range(0, len(ch)) if i%32 == 0]
+    xticks.append( len(ch) )
+    xtickslabel = [ str(i*8) for i in range(0, len(ch)) if i%32 == 0 ]
+    xtickslabel.append(4095)
 
     axes[0].set_xlabel(xlabel)
+    axes[0].set_xticks(xticks)
+    axes[0].set_xticklabels(xtickslabel)
     axes[0].set_ylabel(ylabel)
     axes[0].bar(ch, planes_list[0], width =1, color = '#1f77b4', align ='center')
     axes[0].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[0])
     
     
     axes[1].set_xlabel(xlabel)
+    axes[1].set_xticks(xticks)
+    axes[1].set_xticklabels(xtickslabel)
     axes[1].set_ylabel(ylabel)
     axes[1].bar(ch, planes_list[1], width =1, color = '#1f77b4', align ='center')
     axes[1].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[1])
     
     axes[2].set_xlabel(xlabel)
+    axes[2].set_xticks(xticks)
+    axes[2].set_xticklabels(xtickslabel)
     axes[2].set_ylabel(ylabel)
     axes[2].bar(ch, planes_list[2], width =1, color = '#1f77b4', align ='center')
     axes[2].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[2])
@@ -104,7 +114,7 @@ st.set_page_config(
 )
 monitor = st.empty()
 
-refresh_time = 5       # seconds
+refresh_time = 100       # seconds
 
 # ------ find valid file to read ------
 if len(sys.argv) > 1:
@@ -133,7 +143,7 @@ axis = [ax0, ax1, ax2, ax3]
 # ------ number of event per plane ------
 planes_events = [0]*3
 
-bins = 512 #4096
+bins = 256
 # ------ time histograms ------
 hist_p0 =[0]*bins
 hist_p1 =[0]*bins
@@ -189,11 +199,11 @@ try:
                 
                 #fill the histos - istogramma con sottomultiplo di 4096-> uso il valore/ n come indice
                 if p0_value != 4095:
-                    hist_p0[round(p0_value*.125)] +=1
+                    hist_p0[round(p0_value/16)] +=1
                 if p1_value != 4095:    
-                    hist_p1[round(p1_value*.125)] +=1
+                    hist_p1[round(p1_value/16)] +=1
                 if p2_value != 4095:    
-                    hist_p2[round(p2_value*.125)] +=1
+                    hist_p2[round(p2_value/16)] +=1
 
 
             #compute rate            
@@ -203,12 +213,12 @@ try:
             if  elapsed_time > refresh_time*2:
                 inst_rate = round ( ( int(line[len(line)-1].split(' ')[1]) - rate_info[0])/ elapsed_time , 2)
 
-                if len(rate_over_time) > 99:
-                    rate_over_time.pop(0)
-                    rate_over_time.append(inst_rate)
+                # if len(rate_over_time) > 99:
+                #     rate_over_time.pop(0)
+                #     rate_over_time.append(inst_rate)
                     
-                else:
-                    rate_over_time.append(inst_rate)
+                # else:
+                rate_over_time.append(inst_rate)
  
                 rate_info[1] = float(line[len(line)-1].split(' ')[2])
                 rate_info[0] = int(line[len(line)-1].split(' ')[1])
