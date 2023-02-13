@@ -114,7 +114,7 @@ st.set_page_config(
 )
 monitor = st.empty()
 
-refresh_time = 100       # seconds
+refresh_time = 5       # seconds
 
 # ------ find valid file to read ------
 if len(sys.argv) > 1:
@@ -208,9 +208,10 @@ try:
 
             #compute rate            
             average_rate = round ( int(line[len(line)-1].split(' ')[1]) / float(line[len(line)-1].split(' ')[2]) , 2)
-            elapsed_time =  ( float(line[len(line)-1].split(' ')[2]) - rate_info[1])
- 
-            if  elapsed_time > refresh_time*2:
+            elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[1], 2)
+            #print(elapsed_time)
+            if  elapsed_time > (refresh_time*20) :
+                #print('add rate point')
                 inst_rate = round ( ( int(line[len(line)-1].split(' ')[1]) - rate_info[0])/ elapsed_time , 2)
 
                 # if len(rate_over_time) > 99:
