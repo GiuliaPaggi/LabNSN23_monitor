@@ -6,7 +6,7 @@ from tkinter.filedialog import askopenfilename
 import streamlit as st
 
 # ------ define drawing function ------
-def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_, planes_count, list_rate, event_number):
+def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_, planes_count, list_rate, event_number, elaps_time):
     """
     This function draws the plots and arrange the monitor webpage layout
 
@@ -94,7 +94,7 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
             st.pyplot(figs[3])
             st.markdown("### Total n of triggers: " + event_number)
             st.markdown("### Average Rate: "+av_rate+" Hz")
-            st.markdown("### Latest 100s Rate: "+rate_+" Hz")
+            st.markdown("### Latest "+elaps_time+" s Rate: "+rate_+" Hz")
         with planes_col0:
                 st.markdown("#### P0   -   Total count: "+ planes_count[0])
                 st.pyplot(figs[0])
@@ -105,7 +105,7 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
                 st.markdown("#### P2   -   Total count: "+ planes_count[2])
                 st.pyplot(figs[2])
                 
-
+    plt.close('all')
 
 
 # ------ set up webpage ------
@@ -156,7 +156,7 @@ x_axis = range(bins)
 # ------ rate ------
 average_rate = 0
 inst_rate = 0
-rate_info = [0, 0]          # [n evento, tempo]
+rate_info = [[.0, .0, .0]]          # [n evento, tempo, rate]
 rate_over_time = [0]
 
 try:
@@ -188,11 +188,7 @@ try:
         
             if not line[len(line)-1].endswith('\n'):
                 line.pop(len(line)-1)
-            
-            delta_t = float( line[len(line)-1].split(' ')[1] ) - float(line[0].split(' ')[1] )
-            rate = round (len(line)/delta_t)
-            
-            
+                        
             for i in range(0, len(line)): 
                 #convert to decimal
                 p0_value = int ( line[i].split(' ')[3] , 16) 
@@ -208,25 +204,26 @@ try:
                     hist_p2[round(p2_value/16)] +=1
 
 
-            #compute rate            
+            #compute rate           
             average_rate = round ( int(line[len(line)-1].split(' ')[1]) / float(line[len(line)-1].split(' ')[2]) , 2)
-            elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[1], 2)
-            #print(elapsed_time)
-            if  elapsed_time > (refresh_time*20) :
-                #print('add rate point')
-                inst_rate = round ( ( int(line[len(line)-1].split(' ')[1]) - rate_info[0])/ elapsed_time , 2)
+            elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[0][1] , 2)
+            inst_rate = round ( ( int(line[len(line)-1].split(' ')[1]) - rate_info[0][0] )/ elapsed_time , 2)
 
+            if  len(rate_info) > 19:
+                rate_info.pop(0)
+                rate_info.append( [int(line[len(line)-1].split(' ')[1]),  float(line[len(line)-1].split(' ')[2]), elapsed_time  ] )
+            else: 
+                rate_info.append( [int(line[len(line)-1].split(' ')[1]),  float(line[len(line)-1].split(' ')[2]), elapsed_time  ] )
+                                
+            
                 # if len(rate_over_time) > 99:
                 #     rate_over_time.pop(0)
                 #     rate_over_time.append(inst_rate)
                     
                 # else:
-                rate_over_time.append(inst_rate)
+            rate_over_time.append(inst_rate)
  
-                rate_info[1] = float(line[len(line)-1].split(' ')[2])
-                rate_info[0] = int(line[len(line)-1].split(' ')[1])
-            
-            labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P0', 'P1', 'P2'], str(average_rate), str(inst_rate), [str(sum(hist_p0)), str(sum(hist_p1)), str(sum(hist_p2))], rate_over_time, line[len(line)-1].split(' ')[1])        
+            labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P0', 'P1', 'P2'], str(average_rate), str(inst_rate), [str(sum(hist_p0)), str(sum(hist_p1)), str(sum(hist_p2))], rate_over_time, line[len(line)-1].split(' ')[1], str(rate_info[len(rate_info)-1][2]))        
                 
 except KeyboardInterrupt:
     print ('\nReading stopped.\n') 
