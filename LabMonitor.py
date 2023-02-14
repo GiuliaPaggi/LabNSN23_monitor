@@ -58,6 +58,7 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
     xtickslabel = [ str(i*8) for i in range(0, len(ch)) if i%32 == 0 ]
     xtickslabel.append(4095)
 
+    axes[0].cla()
     axes[0].set_xlabel(xlabel)
     axes[0].set_xticks(xticks)
     axes[0].set_xticklabels(xtickslabel)
@@ -65,7 +66,7 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
     axes[0].bar(ch, planes_list[0], width =1, color = '#1f77b4', align ='center')
     axes[0].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[0])
     
-    
+    axes[1].cla()
     axes[1].set_xlabel(xlabel)
     axes[1].set_xticks(xticks)
     axes[1].set_xticklabels(xtickslabel)
@@ -73,6 +74,7 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
     axes[1].bar(ch, planes_list[1], width =1, color = '#1f77b4', align ='center')
     axes[1].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[1])
     
+    axes[2].cla()
     axes[2].set_xlabel(xlabel)
     axes[2].set_xticks(xticks)
     axes[2].set_xticklabels(xtickslabel)
