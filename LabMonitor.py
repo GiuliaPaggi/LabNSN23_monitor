@@ -167,16 +167,16 @@ try:
         time.sleep(refresh_time)
         line = f.readlines()
 
-        # if reading fails, sleep 0.1s and set pointer back before the failed reading
+        # if reading fails, sleep 5s and set pointer back before the failed reading
         if not line:
-            print('No new lines to be read.')
-            # print(time.time() - os.path.getmtime(filename))
-            if time.time() - os.path.getmtime(file_name) > 120 :
-                print ('\nReading stopped.\n') 
-                f.close()
-                os._exit(0)
-                st.stop()
-                #sys.exit()
+        #     print('No new lines to be read.')
+        #     # print(time.time() - os.path.getmtime(filename))
+        #     if time.time() - os.path.getmtime(file_name) > 120 :
+        #         print ('\nReading stopped.\n') 
+        #         f.close()
+        #         os._exit(0)
+        #         st.stop()
+        #         #sys.exit()
             f.seek(where)
             
         # if the reading is successfull process the string
@@ -207,20 +207,15 @@ try:
             #compute rate           
             average_rate = round ( int(line[len(line)-1].split(' ')[1]) / float(line[len(line)-1].split(' ')[2]) , 2)
             elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[0][1] , 2)
-            inst_rate = round ( ( int(line[len(line)-1].split(' ')[1]) - rate_info[0][0] )/ elapsed_time , 2)
-
-            if  len(rate_info) > 19:
+            
+            if  len(rate_info)>1 and (len(rate_info) > 19 or elapsed_time > 120):
                 rate_info.pop(0)
                 rate_info.append( [int(line[len(line)-1].split(' ')[1]),  float(line[len(line)-1].split(' ')[2]), elapsed_time  ] )
             else: 
                 rate_info.append( [int(line[len(line)-1].split(' ')[1]),  float(line[len(line)-1].split(' ')[2]), elapsed_time  ] )
-                                
             
-                # if len(rate_over_time) > 99:
-                #     rate_over_time.pop(0)
-                #     rate_over_time.append(inst_rate)
-                    
-                # else:
+            elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[0][1] , 2)
+            inst_rate = round ( ( int(line[len(line)-1].split(' ')[1]) - rate_info[0][0] )/ elapsed_time , 2)                    
             rate_over_time.append(inst_rate)
  
             labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P0', 'P1', 'P2'], str(average_rate), str(inst_rate), [str(sum(hist_p0)), str(sum(hist_p1)), str(sum(hist_p2))], rate_over_time, line[len(line)-1].split(' ')[1], str(rate_info[len(rate_info)-1][2]))        
