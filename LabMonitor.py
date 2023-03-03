@@ -158,6 +158,7 @@ average_rate = 0
 inst_rate = 0
 rate_info = [[.0, .0, .0]]          # [n evento, tempo, rate]
 rate_over_time = [0]
+add_point = [.0, .0, .0]
 
 try:
     
@@ -208,7 +209,7 @@ try:
             average_rate = round ( int(line[len(line)-1].split(' ')[1]) / float(line[len(line)-1].split(' ')[2]) , 2)
             elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[0][1] , 2)
             
-            if  len(rate_info)>1 and (len(rate_info) > 19 or elapsed_time > 120):
+            if  len(rate_info)>1 and (len(rate_info) > 19 or elapsed_time > 110):
                 rate_info.pop(0)
                 rate_info.append( [int(line[len(line)-1].split(' ')[1]),  float(line[len(line)-1].split(' ')[2]), elapsed_time  ] )
             else: 
@@ -216,7 +217,9 @@ try:
             
             elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[0][1] , 2)
             inst_rate = round ( ( int(line[len(line)-1].split(' ')[1]) - rate_info[0][0] )/ elapsed_time , 2)                    
-            rate_over_time.append(inst_rate)
+            if not (add_point in rate_info):
+                rate_over_time.append(inst_rate)
+                add_point = rate_info[(len(rate_info) -1)]
  
             labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P0', 'P1', 'P2'], str(average_rate), str(inst_rate), [str(sum(hist_p0)), str(sum(hist_p1)), str(sum(hist_p2))], rate_over_time, line[len(line)-1].split(' ')[1], str(rate_info[len(rate_info)-1][2]))        
                 
