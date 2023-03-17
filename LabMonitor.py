@@ -4,6 +4,7 @@ from datetime import datetime
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 import streamlit as st
+import numpy as np
 
 # ------ define drawing function ------
 def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_, planes_count, list_rate, event_number, elaps_time):
@@ -139,17 +140,17 @@ fig1, ax1 = plt.subplots(1, 1, figsize = (15, 15))
 fig2, ax2 = plt.subplots(1, 1, figsize = (15, 15))
 fig3, ax3 = plt.subplots(1, 1, figsize = (15, 10))
 
-figures = [fig0, fig1, fig2, fig3]
-axis = [ax0, ax1, ax2, ax3]
+figures = np.array([fig0, fig1, fig2, fig3])
+axis = np.array([ax0, ax1, ax2, ax3])
 
 # ------ number of event per plane ------
-planes_events = [0]*3
+planes_events = np.zeros(3)#[0]*3
 
 bins = 256
 # ------ time histograms ------
-hist_p0 =[0]*bins
-hist_p1 =[0]*bins
-hist_p2 =[0]*bins
+hist_p0 = np.zeros(bins)#[0]*bins
+hist_p1 = np.zeros(bins)#[0]*bins
+hist_p2 = np.zeros(bins)#[0]*bins
 
 x_axis = range(bins)
 
@@ -170,14 +171,14 @@ try:
 
         # if reading fails, sleep 5s and set pointer back before the failed reading
         if not line:
-        #     print('No new lines to be read.')
-        #     # print(time.time() - os.path.getmtime(filename))
-        #     if time.time() - os.path.getmtime(file_name) > 120 :
-        #         print ('\nReading stopped.\n') 
-        #         f.close()
-        #         os._exit(0)
-        #         st.stop()
-        #         #sys.exit()
+            print('No new lines to be read.')
+            # print(time.time() - os.path.getmtime(filename))
+            if time.time() - os.path.getmtime(file_name) > 120 :
+                print ('\nReading stopped.\n') 
+                f.close()
+                os._exit(0)
+                st.stop()
+                #sys.exit()
             f.seek(where)
             
         # if the reading is successfull process the string
