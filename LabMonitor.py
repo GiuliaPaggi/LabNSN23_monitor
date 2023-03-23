@@ -51,14 +51,14 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
     None.
 
     """
-    
+
     xlabel = 'TDC count'
     ylabel = 'Entries'
     xticks = [ i for i in range(0, len(ch)) if i%32 == 0]
     xticks.append( len(ch) )
     xtickslabel = [ str(i*8) for i in range(0, len(ch)) if i%32 == 0 ]
     xtickslabel.append(4095)
-
+        
     axes[0].cla()
     axes[0].set_xlabel(xlabel)
     axes[0].set_xticks(xticks)
@@ -87,6 +87,33 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
     axes[3].set_ylabel('Rate')
     axes[3].plot( range(0, len(list_rate)), list_rate, color = '#1f77b4')
     
+    axes[4].cla()
+    axes[4].set_xlabel(xlabel)
+    axes[4].set_xticks(xticks)
+    axes[4].set_xticklabels(xtickslabel)
+    axes[4].set_ylabel(ylabel)
+    axes[4].set_yscale('log')
+    axes[4].bar(ch, planes_list[0], width =1, color = '#1f77b4', align ='center')
+    axes[4].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[0])
+    
+    axes[5].cla()
+    axes[5].set_xlabel(xlabel)
+    axes[5].set_xticks(xticks)
+    axes[5].set_xticklabels(xtickslabel)
+    axes[5].set_ylabel(ylabel)
+    axes[5].set_yscale('log')
+    axes[5].bar(ch, planes_list[0], width =1, color = '#1f77b4', align ='center')
+    axes[5].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[0])
+    
+    axes[6].cla()
+    axes[6].set_xlabel(xlabel)
+    axes[6].set_xticks(xticks)
+    axes[6].set_xticklabels(xtickslabel)
+    axes[6].set_ylabel(ylabel)
+    axes[6].set_yscale('log')
+    axes[6].bar(ch, planes_list[0], width =1, color = '#1f77b4', align ='center')
+    axes[6].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[0])
+    
     with placeholder.container():
         #st.title('Laboratory N&SN Physics 2 ')
         rate_col, planes_col0, planes_col1, planes_col2 = st.columns([1, 1, 1, 1])
@@ -97,14 +124,20 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
             st.markdown("### Average Rate: "+av_rate+" Hz")
             st.markdown("### Latest "+elaps_time+" s Rate: "+rate_+" Hz")
         with planes_col0:
-                st.markdown("#### P0   -   Total count: "+ planes_count[0])
+                st.markdown("#### P1   -   Total count: "+ planes_count[0])
                 st.pyplot(figs[0])
+                st.markdown("#### P1   -   Log scale")
+                st.pyplot(figs[4])
         with planes_col1:
-                st.markdown("#### P1   -   Total count: "+ planes_count[1])
+                st.markdown("#### P2   -   Total count: "+ planes_count[1])
                 st.pyplot(figs[1])
+                st.markdown("#### P2   -   Log scale")
+                st.pyplot(figs[5])
         with planes_col2:
-                st.markdown("#### P2   -   Total count: "+ planes_count[2])
+                st.markdown("#### P3   -   Total count: "+ planes_count[2])
                 st.pyplot(figs[2])
+                st.markdown("#### P3   -   Log scale")
+                st.pyplot(figs[6])
                 
     plt.close('all')
 
@@ -135,13 +168,16 @@ f = open(file_name, 'r')
 print(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+ ' Reading ' + file_name )
 
 
-fig0, ax0 = plt.subplots(1, 1, figsize = (15, 15))
-fig1, ax1 = plt.subplots(1, 1, figsize = (15, 15))
-fig2, ax2 = plt.subplots(1, 1, figsize = (15, 15))
+fig0, ax0 = plt.subplots(1, 1, figsize = (15, 10))
+fig1, ax1 = plt.subplots(1, 1, figsize = (15, 10))
+fig2, ax2 = plt.subplots(1, 1, figsize = (15, 10))
+fig0_log, ax0_log = plt.subplots(1, 1, figsize = (15, 10))
+fig1_log, ax1_log = plt.subplots(1, 1, figsize = (15, 10))
+fig2_log, ax2_log = plt.subplots(1, 1, figsize = (15, 10))
 fig3, ax3 = plt.subplots(1, 1, figsize = (15, 10))
 
-figures = np.array([fig0, fig1, fig2, fig3])
-axis = np.array([ax0, ax1, ax2, ax3])
+figures = np.array([fig0, fig1, fig2, fig3, fig0_log, fig1_log, fig2_log])
+axis = np.array([ax0, ax1, ax2, ax3, ax0_log, ax1_log, ax2_log])
 
 # ------ number of event per plane ------
 planes_events = np.zeros(3)#[0]*3
@@ -210,7 +246,7 @@ try:
             average_rate = round ( int(line[len(line)-1].split(' ')[1]) / float(line[len(line)-1].split(' ')[2]) , 2)
             elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[0][1] , 2)
             
-            if  len(rate_info)>1 and (len(rate_info) > 19 or elapsed_time > 110):
+            if  len(rate_info)>1 and ( len(rate_info) > 19 or elapsed_time > 110 ):
                 rate_info.pop(0)
                 rate_info.append( [int(line[len(line)-1].split(' ')[1]),  float(line[len(line)-1].split(' ')[2]), elapsed_time  ] )
             else: 
@@ -222,7 +258,7 @@ try:
                 rate_over_time.append(inst_rate)
                 add_point = rate_info[(len(rate_info) -1)]
  
-            labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P1', 'P2', 'P3'], str(average_rate), str(inst_rate), [str(sum(hist_p0)), str(sum(hist_p1)), str(sum(hist_p2))], rate_over_time, line[len(line)-1].split(' ')[1], str(rate_info[len(rate_info)-1][2]))        
+            labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P1', 'P2', 'P3'], str(average_rate), str(inst_rate), [str(int(sum(hist_p0))), str(int(sum(hist_p1))), str(int(sum(hist_p2)))], rate_over_time, line[len(line)-1].split(' ')[1], str(rate_info[len(rate_info)-1][2]))        
                 
 except KeyboardInterrupt:
     print ('\nReading stopped.\n') 
