@@ -146,7 +146,7 @@ axis = np.array([ax0, ax1, ax2, ax3])
 # ------ number of event per plane ------
 planes_events = np.zeros(3)#[0]*3
 
-bins = 256
+bins = 257
 # ------ time histograms ------
 hist_p0 = np.zeros(bins)#[0]*bins
 hist_p1 = np.zeros(bins)#[0]*bins
@@ -222,7 +222,7 @@ try:
                 rate_over_time.append(inst_rate)
                 add_point = rate_info[(len(rate_info) -1)]
  
-            labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P0', 'P1', 'P2'], str(average_rate), str(inst_rate), [str(sum(hist_p0)), str(sum(hist_p1)), str(sum(hist_p2))], rate_over_time, line[len(line)-1].split(' ')[1], str(rate_info[len(rate_info)-1][2]))        
+            labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P1', 'P2', 'P3'], str(average_rate), str(inst_rate), [str(sum(hist_p0)), str(sum(hist_p1)), str(sum(hist_p2))], rate_over_time, line[len(line)-1].split(' ')[1], str(rate_info[len(rate_info)-1][2]))        
                 
 except KeyboardInterrupt:
     print ('\nReading stopped.\n') 
