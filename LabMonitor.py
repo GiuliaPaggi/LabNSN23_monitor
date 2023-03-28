@@ -182,7 +182,7 @@ axis = np.array([ax0, ax1, ax2, ax3, ax0_log, ax1_log, ax2_log])
 # ------ number of event per plane ------
 planes_events = np.zeros(3)#[0]*3
 
-bins = 257
+bins = 256
 # ------ time histograms ------
 hist_p0 = np.zeros(bins)#[0]*bins
 hist_p1 = np.zeros(bins)#[0]*bins
@@ -235,11 +235,11 @@ try:
                 
                 #fill the histos - istogramma con sottomultiplo di 4096-> uso il valore/ n come indice
                 if p0_value != 4095:
-                    hist_p0[round(p0_value/16)] +=1
+                    hist_p0[int(np.floor(p0_value/16))] +=1
                 if p1_value != 4095:    
-                    hist_p1[round(p1_value/16)] +=1
+                    hist_p1[int(np.floor(p1_value/16))] +=1
                 if p2_value != 4095:    
-                    hist_p2[round(p2_value/16)] +=1
+                    hist_p2[int(np.floor(p2_value/16))] +=1
 
 
             #compute rate           
