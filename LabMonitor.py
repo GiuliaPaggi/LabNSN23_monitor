@@ -246,7 +246,8 @@ try:
             average_rate = round ( int(line[len(line)-1].split(' ')[1]) / float(line[len(line)-1].split(' ')[2]) , 2)
             elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[0][1] , 2)
             
-            if  len(rate_info)>1 and ( len(rate_info) > 19 or elapsed_time > 110 ):
+            #if  len(rate_info)>1 and ( len(rate_info) > 19 or elapsed_time > 110 ):
+            if len(rate_info) > 19:
                 rate_info.pop(0)
                 rate_info.append( [int(line[len(line)-1].split(' ')[1]),  float(line[len(line)-1].split(' ')[2]), elapsed_time  ] )
             else: 
