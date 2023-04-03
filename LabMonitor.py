@@ -102,8 +102,8 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
     axes[5].set_xticklabels(xtickslabel)
     axes[5].set_ylabel(ylabel)
     axes[5].set_yscale('log')
-    axes[5].bar(ch, planes_list[0], width =1, color = '#1f77b4', align ='center')
-    axes[5].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[0])
+    axes[5].bar(ch, planes_list[1], width =1, color = '#1f77b4', align ='center')
+    axes[5].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[1])
     
     axes[6].cla()
     axes[6].set_xlabel(xlabel)
@@ -111,8 +111,8 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
     axes[6].set_xticklabels(xtickslabel)
     axes[6].set_ylabel(ylabel)
     axes[6].set_yscale('log')
-    axes[6].bar(ch, planes_list[0], width =1, color = '#1f77b4', align ='center')
-    axes[6].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[0])
+    axes[6].bar(ch, planes_list[2], width =1, color = '#1f77b4', align ='center')
+    axes[6].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[2])
     
     with placeholder.container():
         #st.title('Laboratory N&SN Physics 2 ')
