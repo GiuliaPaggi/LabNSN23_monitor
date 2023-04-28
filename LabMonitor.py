@@ -56,66 +56,75 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
     ylabel = 'Entries'
     xticks = [ i for i in range(0, len(ch)) if i%32 == 0]
     xticks.append( len(ch) )
-    xtickslabel = [ str(i*8) for i in range(0, len(ch)) if i%32 == 0 ]
+    xtickslabel = [ str(i*16) for i in range(0, len(ch)) if i%32 == 0 ]
     xtickslabel.append(4095)
+    FontSize=25
         
     axes[0].cla()
-    axes[0].set_xlabel(xlabel)
+    axes[0].set_xlabel(xlabel, size = FontSize)
     axes[0].set_xticks(xticks)
     axes[0].set_xticklabels(xtickslabel)
-    axes[0].set_ylabel(ylabel)
+    axes[0].set_ylabel(ylabel, size = FontSize)
+    axes[0].tick_params(axis='both', labelsize = FontSize)
     axes[0].bar(ch, planes_list[0], width =1, color = '#1f77b4', align ='center')
-    axes[0].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[0])
+    axes[0].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' - ' +titles[0], size = FontSize)
     
     axes[1].cla()
-    axes[1].set_xlabel(xlabel)
+    axes[1].set_xlabel(xlabel, size = FontSize)
     axes[1].set_xticks(xticks)
     axes[1].set_xticklabels(xtickslabel)
-    axes[1].set_ylabel(ylabel)
+    axes[1].set_ylabel(ylabel, size = FontSize)
+    axes[1].tick_params(axis='both', labelsize = FontSize)
     axes[1].bar(ch, planes_list[1], width =1, color = '#1f77b4', align ='center')
-    axes[1].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[1])
+    axes[1].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' - ' +titles[1], size = FontSize)
     
     axes[2].cla()
-    axes[2].set_xlabel(xlabel)
+    axes[2].set_xlabel(xlabel, size = FontSize)
     axes[2].set_xticks(xticks)
     axes[2].set_xticklabels(xtickslabel)
-    axes[2].set_ylabel(ylabel)
+    axes[2].set_ylabel(ylabel, size = FontSize)
+    axes[2].tick_params(axis='both', labelsize = FontSize)
     axes[2].bar(ch, planes_list[2], width =1, color = '#1f77b4', align ='center')
-    axes[2].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[2])
+    axes[2].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' - ' +titles[2], size = FontSize)
     
-    axes[3].set_xlabel('# of refresh')
-    axes[3].set_ylabel('Rate')
+    axes[3].cla()
+    axes[3].set_xlabel('Elapsed time (1 step every 20 page refresh)', size = FontSize)
+    axes[3].set_ylabel('Rate', size = FontSize)
+    axes[3].tick_params(axis='both', labelsize = FontSize)
     axes[3].plot( range(0, len(list_rate)), list_rate, color = '#1f77b4')
+    axes[3].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S"), size = FontSize)
     
     axes[4].cla()
-    axes[4].set_xlabel(xlabel)
+    axes[4].set_xlabel(xlabel, size = FontSize)
     axes[4].set_xticks(xticks)
     axes[4].set_xticklabels(xtickslabel)
-    axes[4].set_ylabel(ylabel)
+    axes[4].set_ylabel(ylabel, size = FontSize)
+    axes[4].tick_params(axis='both', labelsize = FontSize)
     axes[4].set_yscale('log')
     axes[4].bar(ch, planes_list[0], width =1, color = '#1f77b4', align ='center')
-    axes[4].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[0])
+    axes[4].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' - ' +titles[0], size = FontSize)
     
     axes[5].cla()
-    axes[5].set_xlabel(xlabel)
+    axes[5].set_xlabel(xlabel, size = FontSize)
     axes[5].set_xticks(xticks)
     axes[5].set_xticklabels(xtickslabel)
-    axes[5].set_ylabel(ylabel)
+    axes[5].set_ylabel(ylabel, size = FontSize)
+    axes[5].tick_params(axis='both', labelsize = FontSize)
     axes[5].set_yscale('log')
     axes[5].bar(ch, planes_list[1], width =1, color = '#1f77b4', align ='center')
-    axes[5].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[1])
+    axes[5].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' - ' +titles[1], size = FontSize)
     
     axes[6].cla()
-    axes[6].set_xlabel(xlabel)
+    axes[6].set_xlabel(xlabel, size = FontSize)
     axes[6].set_xticks(xticks)
     axes[6].set_xticklabels(xtickslabel)
-    axes[6].set_ylabel(ylabel)
+    axes[6].set_ylabel(ylabel, size = FontSize)
+    axes[6].tick_params(axis='both', labelsize = FontSize)
     axes[6].set_yscale('log')
     axes[6].bar(ch, planes_list[2], width =1, color = '#1f77b4', align ='center')
-    axes[6].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' ' +titles[2])
+    axes[6].set_title(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+' - ' +titles[2], size = FontSize)
     
     with placeholder.container():
-        #st.title('Laboratory N&SN Physics 2 ')
         rate_col, planes_col0, planes_col1, planes_col2 = st.columns([1, 1, 1, 1])
         with rate_col:
             st.markdown('#### Rate over time ')
@@ -245,8 +254,6 @@ try:
             #compute rate           
             average_rate = round ( int(line[len(line)-1].split(' ')[1]) / float(line[len(line)-1].split(' ')[2]) , 2)
             elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[0][1] , 2)
-            
-            #if  len(rate_info)>1 and ( len(rate_info) > 19 or elapsed_time > 110 ):
             if len(rate_info) > 19:
                 rate_info.pop(0)
                 rate_info.append( [int(line[len(line)-1].split(' ')[1]),  float(line[len(line)-1].split(' ')[2]), elapsed_time  ] )
@@ -255,7 +262,11 @@ try:
             
             elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[0][1] , 2)
             inst_rate = round ( ( int(line[len(line)-1].split(' ')[1]) - rate_info[0][0] )/ elapsed_time , 2)                    
-            if not (add_point in rate_info):
+            if not (add_point in rate_info): 
+                #set a limit for rate list 
+                if len(rate_over_time) > 99:
+                    rate_over_time.pop(0)
+                    
                 rate_over_time.append(inst_rate)
                 add_point = rate_info[(len(rate_info) -1)]
  
