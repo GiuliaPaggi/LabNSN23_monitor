@@ -252,16 +252,20 @@ try:
 
 
             #compute rate           
-            average_rate = round ( int(line[len(line)-1].split(' ')[1]) / float(line[len(line)-1].split(' ')[2]) , 2)
-            elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[0][1] , 2)
+            event_n = int(line[len(line)-1].split(' ')[1])
+            time_from_start = float(line[len(line)-1].split(' ')[2])
+            
+            average_rate = round ( event_n / time_from_start , 2)
+            elapsed_time = round ( time_from_start - rate_info[0][1] , 2)
+
+            #keep list dimensions under control
             if len(rate_info) > 19:
                 rate_info.pop(0)
-                rate_info.append( [int(line[len(line)-1].split(' ')[1]),  float(line[len(line)-1].split(' ')[2]), elapsed_time  ] )
-            else: 
-                rate_info.append( [int(line[len(line)-1].split(' ')[1]),  float(line[len(line)-1].split(' ')[2]), elapsed_time  ] )
+
+            rate_info.append( [event_n,  time_from_start, elapsed_time  ] )
             
-            elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[0][1] , 2)
-            inst_rate = round ( ( int(line[len(line)-1].split(' ')[1]) - rate_info[0][0] )/ elapsed_time , 2)                    
+            elapsed_time = round ( time_from_start - rate_info[0][1] , 2)
+            inst_rate = round ( ( event_n - rate_info[0][0] )/ elapsed_time , 2)                    
             if not (add_point in rate_info): 
                 #set a limit for rate list 
                 if len(rate_over_time) > 99:
