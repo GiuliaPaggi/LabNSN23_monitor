@@ -212,6 +212,7 @@ try:
         # try to read a line
         where = f.tell()
         time.sleep(refresh_time)
+        line.clear()
         line = f.readlines()
 
         # if reading fails, sleep 5s and set pointer back before the failed reading
