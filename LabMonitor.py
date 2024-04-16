@@ -5,7 +5,10 @@ from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 import streamlit as st
 import numpy as np
+#from memory_profiler import profile
+import gc
 
+#@profile
 # ------ define drawing function ------
 def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_, planes_count, list_rate, event_number, elaps_time):
     """
@@ -159,7 +162,7 @@ st.set_page_config(
 )
 monitor = st.empty()
 
-refresh_time = 5       # seconds
+refresh_time = 30       # seconds
 
 # ------ find valid file to read ------
 if len(sys.argv) > 1:
@@ -271,7 +274,8 @@ try:
                 add_point = rate_info[(len(rate_info) -1)]
  
             labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P1', 'P2', 'P3'], str(average_rate), str(inst_rate), [str(int(sum(hist_p0))), str(int(sum(hist_p1))), str(int(sum(hist_p2)))], rate_over_time, line[len(line)-1].split(' ')[1], str(rate_info[len(rate_info)-1][2]))        
-                
+            gc.collect()
+            
 except KeyboardInterrupt:
     print ('\nReading stopped.\n') 
     sys.exit()
