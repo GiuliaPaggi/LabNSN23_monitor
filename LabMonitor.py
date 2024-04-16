@@ -286,7 +286,7 @@ try:
  
             labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P1', 'P2', 'P3'], str(average_rate), str(inst_rate), [str(int(sum(hist_p0))), str(int(sum(hist_p1))), str(int(sum(hist_p2)))], rate_over_time, line[len(line)-1].split(' ')[1], str(rate_info[len(rate_info)-1][2]))        
             gc.collect()
-            
+            line.clear()
 except KeyboardInterrupt:
     print ('\nReading stopped.\n') 
     sys.exit()
