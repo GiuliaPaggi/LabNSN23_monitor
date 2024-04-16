@@ -254,24 +254,35 @@ try:
                     hist_p2[int(np.floor(p2_value/16))] +=1
 
 
-            #compute rate           
-            average_rate = round ( int(line[len(line)-1].split(' ')[1]) / float(line[len(line)-1].split(' ')[2]) , 2)
-            elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[0][1] , 2)
-            if len(rate_info) > 19:
-                rate_info.pop(0)
-                rate_info.append( [int(line[len(line)-1].split(' ')[1]),  float(line[len(line)-1].split(' ')[2]), elapsed_time  ] )
-            else: 
-                rate_info.append( [int(line[len(line)-1].split(' ')[1]),  float(line[len(line)-1].split(' ')[2]), elapsed_time  ] )
+            #compute rate using last read line  
+            event_n = int(line[len(line)-1].split(' ')[1])
+            time_from_start = float(line[len(line)-1].split(' ')[2])
             
-            elapsed_time = round ( float(line[len(line)-1].split(' ')[2]) - rate_info[0][1] , 2)
-            inst_rate = round ( ( int(line[len(line)-1].split(' ')[1]) - rate_info[0][0] )/ elapsed_time , 2)                    
+            average_rate = round ( event_n / time_from_start , 2)
+            elapsed_time = round ( time_from_start - rate_info[0][1] , 2)
+
+            #keep list dimensions under control
+            if len(rate_info) > 23 : # 24*5s = 2 min
+                rate_info.pop(0)
+
+            rate_info.append( [event_n,  time_from_start, elapsed_time  ] )
+
+            # recompute elapsed time after appending the latest 
+            elapsed_time = round ( time_from_start - rate_info[0][1] , 2)
+            # compute instant rate
+            inst_rate = round ( ( event_n - rate_info[0][0] )/ elapsed_time , 2)    
+
+            # dal ciclo precedente, controllo che l'ultimo che ho aggiunto in rate info non sia più nella lista -> trascorsi circa 2 min -> mi salvo l'instant rate in rate_over_time
             if not (add_point in rate_info): 
+                
                 #set a limit for rate list 
                 if len(rate_over_time) > 99:
                     rate_over_time.pop(0)
                     
                 rate_over_time.append(inst_rate)
-                add_point = rate_info[(len(rate_info) -1)]
+                
+                # mi salvo l'ultimo valore che ho messo in rate_info
+                add_point = rate_info[(len(rate_info) -1)] 
  
             labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P1', 'P2', 'P3'], str(average_rate), str(inst_rate), [str(int(sum(hist_p0))), str(int(sum(hist_p1))), str(int(sum(hist_p2)))], rate_over_time, line[len(line)-1].split(' ')[1], str(rate_info[len(rate_info)-1][2]))        
             gc.collect()
