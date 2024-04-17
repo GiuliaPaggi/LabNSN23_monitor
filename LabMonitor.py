@@ -5,10 +5,10 @@ from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 import streamlit as st
 import numpy as np
-#from memory_profiler import profile
+from memory_profiler import profile
 import gc
 
-#@profile
+@profile
 # ------ define drawing function ------
 def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_, planes_count, list_rate, event_number, elaps_time):
     """
@@ -57,10 +57,8 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
 
     xlabel = 'TDC count'
     ylabel = 'Entries'
-    xticks = [ i for i in range(0, len(ch)) if i%32 == 0]
-    xticks.append( len(ch) )
-    xtickslabel = [ str(i*16) for i in range(0, len(ch)) if i%32 == 0 ]
-    xtickslabel.append(4095)
+    xticks = [ i for i in range(0, len(ch)+1) if i%32 == 0]
+    xtickslabel = [ str(i*16) for i in range(0, len(ch)+1) if i%32 == 0 ]
     FontSize=25
         
     axes[0].cla()
@@ -152,6 +150,7 @@ def labMonitor(placeholder, ch, figs, axes,  planes_list, titles, av_rate, rate_
                 st.pyplot(figs[6])
                 
     plt.close('all')
+    gc.collect()
 
 
 # ------ set up webpage ------
@@ -160,8 +159,7 @@ st.set_page_config(
     page_icon='	:stars:',
     layout="wide",
 )
-monitor = st.empty()
-
+monitor = st.empty()     
 refresh_time = 30       # seconds
 
 # ------ find valid file to read ------
@@ -203,15 +201,16 @@ hist_p2 = np.zeros(bins)#[0]*bins
 x_axis = range(bins)
 
 # ------ rate ------
-average_rate = 0
+average_rate = 0 
 inst_rate = 0
 rate_info = [[.0, .0, .0]]          # [n evento, tempo, rate]
 rate_over_time = [0]
 add_point = [.0, .0, .0]
 
+
 try:
-    
-    while( True ):        
+    while( True ):     
+        gc.collect()   
         # try to read a line
         where = f.tell()
         time.sleep(refresh_time)
@@ -231,7 +230,7 @@ try:
             
         # if the reading is successfull process the string
         else:    
- 
+
             #check line integrity
             if not line[0].startswith('_'):
                 line.pop(0)
@@ -276,17 +275,18 @@ try:
             if not (add_point in rate_info): 
                 
                 #set a limit for rate list 
-                if len(rate_over_time) > 99:
+                if len(rate_over_time) > 39:
                     rate_over_time.pop(0)
                     
                 rate_over_time.append(inst_rate)
                 
                 # mi salvo l'ultimo valore che ho messo in rate_info
                 add_point = rate_info[(len(rate_info) -1)] 
- 
+
             labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P1', 'P2', 'P3'], str(average_rate), str(inst_rate), [str(int(sum(hist_p0))), str(int(sum(hist_p1))), str(int(sum(hist_p2)))], rate_over_time, line[len(line)-1].split(' ')[1], str(rate_info[len(rate_info)-1][2]))        
-            gc.collect()
             line.clear()
+        gc.collect()
+            
 except KeyboardInterrupt:
     print ('\nReading stopped.\n') 
     sys.exit()
