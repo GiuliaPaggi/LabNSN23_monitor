@@ -306,14 +306,15 @@ async def main():
             gc.collect()
 
     except IndexError:
-        await send_message("Error out of range in data in "+ postazione +"!")
-        f.close()
-        os._exit(0)
-
+        await send_message("Error in data format in "+ postazione +"!")
+        
     except KeyboardInterrupt:
         print ('\nReading stopped.\n') 
         sys.exit()
         f.close()
+    
+    except:
+        pass
 
 
 if __name__ == '__main__':
