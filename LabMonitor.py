@@ -13,11 +13,24 @@ import telegram
 
 # ------ set up telegram bot ------
 bot = telegram.Bot(token='XXX')
+chat = 'XXX'
 postazione = "fake"
 
 async def send_message(text):
     async with bot:
-        await bot.send_message(text=text, chat_id='XXX')
+        await bot.send_message(text=text, chat_id=chat)
+
+async def send_photo(photo, text):
+    async with bot:
+        await bot.send_message(text=text, chat_id=chat)
+        await bot.send_photo(photo=photo, chat_id=chat)
+
+def checktime() : 
+
+    if datetime.now().hour ==  9 and datetime.now().minute < 5 : return True
+    if datetime.now().hour == 15 and datetime.now().minute < 25 : return True
+ 
+    return False
 
 
 
@@ -222,6 +235,7 @@ async def main():
     rate_over_time = [0]
     add_point = [.0, .0, .0]
 
+    message_sent = False
 
     try:
         while( True ):     
@@ -303,6 +317,16 @@ async def main():
 
                 labMonitor(monitor, x_axis, figures, axis, [hist_p0, hist_p1, hist_p2], ['P1', 'P2', 'P3'], str(average_rate), str(inst_rate), [str(int(sum(hist_p0))), str(int(sum(hist_p1))), str(int(sum(hist_p2)))], rate_over_time, line[len(line)-1].split(' ')[1], str(round(rate_info[len(rate_info)-1][2], 0)))        
                 line.clear()
+
+                # Sending a message
+                if checktime() and not message_sent :
+                    await send_photo(photo='path', text = postazione + ' data taking is ongoing')
+                    message_sent = True
+
+                elif not checktime() and message_sent :
+                    message_sent = False
+
+                
             gc.collect()
 
     except IndexError:
@@ -313,8 +337,8 @@ async def main():
         sys.exit()
         f.close()
     
-    except:
-        pass
+    # except:
+    #     print()
 
 
 if __name__ == '__main__':
