@@ -62,7 +62,7 @@ async def main():
         st.error("File does not exist")
         return
 
-        f = open(file_name, "r")
+    f = open(file_name, "r")
 
     # -------- DATA --------
     bins = 256
@@ -85,7 +85,7 @@ async def main():
     message_sent = False
 
     # -------- FIGURE --------
-    fig, axes = plt.subplots(3, 3, figsize=(18, 12))
+    fig, axes = plt.subplots(3, 3, figsize=(12, 8))
     plot_placeholder = st.empty()
 
     # -------- LOOP --------
@@ -216,7 +216,14 @@ async def main():
             f"Events: {event_n} | Avg: {avg_rate:.2f} Hz | Inst: {inst_rate:.2f} Hz",
             fontsize=16
         )
-
+        fig.subplots_adjust(
+            left=0.06,
+            right=0.98,
+            top=0.90,
+            bottom=0.08,
+            hspace=0.6,   
+            wspace=0.3
+        )
         plot_placeholder.pyplot(fig)
 
         # -------- TELEGRAM --------
