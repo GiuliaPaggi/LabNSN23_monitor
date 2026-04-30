@@ -156,42 +156,64 @@ async def main():
         if len(rate_over_time) > MAX_RATE_HISTORY:
             rate_over_time.pop(0)
 
-        # -------- UPDATE PLOTS  --------
+       # -------- UPDATE PLOTS (CLEAN + CONSISTENT) --------
         for ax in axes.flatten():
             ax.cla()
-
-        # linear
+        
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # --- compute common limits (important for alignment) ---
+        max_count = max(
+            hist_p0.max(),
+            hist_p1.max(),
+            hist_p2.max(),
+            1  # avoid zero issues
+        )
+        
+        # -------- LINEAR HISTOS --------
         axes[0, 0].bar(x_axis, hist_p0)
-        axes[0, 0].set_title("P1")
-
+        axes[0, 0].set_title(f"P1 (Linear)\n{timestamp}")
+        axes[0, 0].set_ylim(0, max_count)
+        
         axes[0, 1].bar(x_axis, hist_p1)
-        axes[0, 1].set_title("P2")
-
+        axes[0, 1].set_title(f"P2 (Linear)\n{timestamp}")
+        axes[0, 1].set_ylim(0, max_count)
+        
         axes[0, 2].bar(x_axis, hist_p2)
-        axes[0, 2].set_title("P3")
-
-        # rate
+        axes[0, 2].set_title(f"P3 (Linear)\n{timestamp}")
+        axes[0, 2].set_ylim(0, max_count)
+        
+        # -------- RATE --------
         axes[1, 0].plot(rate_over_time)
-        axes[1, 0].set_title("Rate over time")
-
-        # log plots
-        axes[1, 1].bar(x_axis, hist_p0)
-        axes[1, 1].set_yscale("log")
-
-        axes[1, 2].bar(x_axis, hist_p1)
-        axes[1, 2].set_yscale("log")
-
-        axes[2, 0].bar(x_axis, hist_p2)
-        axes[2, 0].set_yscale("log")
-
+        axes[1, 0].set_title(f"Rate over time\n{timestamp}")
+        axes[1, 0].set_xlabel("Step")
+        axes[1, 0].set_ylabel("Hz")
+        
+        # -------- LOG HISTOS (ALIGNED WITH LINEAR) --------
+        for i, hist in enumerate([hist_p0, hist_p1, hist_p2]):
+            ax = axes[1, i+1]
+        
+            # avoid log(0) issues
+            hist_safe = np.where(hist == 0, 1, hist)
+        
+            ax.bar(x_axis, hist_safe)
+            ax.set_yscale("log")
+        
+            ax.set_ylim(1, max_count)  # <-- SAME upper limit → aligned
+            ax.set_title(f"P{i+1} (Log)\n{timestamp}")
+        
+        # -------- OPTIONAL: clean bottom row --------
+        axes[2, 0].axis("off")
         axes[2, 1].axis("off")
         axes[2, 2].axis("off")
-
+        
+        # -------- GLOBAL TITLE --------
         fig.suptitle(
-            f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | "
-            f"Events: {event_n} | Avg: {avg_rate:.2f} Hz | Inst: {inst_rate:.2f} Hz"
+            f"Events: {event_n} | Avg: {avg_rate:.2f} Hz | Inst: {inst_rate:.2f} Hz",
+            fontsize=16
         )
-
+        
+        # -------- DRAW --------
         plot_placeholder.pyplot(fig)
 
         # -------- TELEGRAM --------
