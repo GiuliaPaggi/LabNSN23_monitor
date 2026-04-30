@@ -8,12 +8,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
 import telegram
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
 
 
 # ---------------- TELEGRAM ----------------
 BOT_TOKEN = "xxxx"
 CHAT_ID = "xxxx"
-POSTAZIONE = "Ranzani"
+POSTAZIONE = "Fake"
 
 bot = telegram.Bot(token=BOT_TOKEN)
 
@@ -43,27 +45,29 @@ def read_new_lines(f):
         lines.append(line)
     return lines
 
-
+# ---------------- MAIN ----------------
 async def main():
 
     st.set_page_config(page_title="Monitor", layout="wide")
     st.title("DAQ Monitor")
 
-    refresh_time = 30
+    refresh_time = 2
 
-    # -------- FILE --------
+   # ------ find valid file to read ------
     if len(sys.argv) > 1:
-        file_name = sys.argv[1]
+        file_name = './'+sys.argv[1]
+        if not os.path.exists(file_name):
+            print('This file does not exist! Select the data file', flush=True)
+            Tk().withdraw()
+            file_name = askopenfilename()
     else:
-        st.error("Provide file as argument")
-        return
-
-    if not os.path.exists(file_name):
-        st.error("File does not exist")
-        return
+        print('Select the data file', flush=True)
+        Tk().withdraw()
+        file_name = askopenfilename()    
 
     f = open(file_name, "r")
-
+    print(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+ ' Reading ' + file_name )
+    
     # -------- DATA --------
     bins = 256
     hist_p0 = np.zeros(bins, dtype=np.int32)
@@ -85,7 +89,7 @@ async def main():
     message_sent = False
 
     # -------- FIGURE --------
-    fig, axes = plt.subplots(3, 3, figsize=(12, 8))
+    fig, axes = plt.subplots(3, 3, figsize=(18, 12))
     plot_placeholder = st.empty()
 
     # -------- LOOP --------
@@ -224,7 +228,7 @@ async def main():
             hspace=0.6,   
             wspace=0.3
         )
-        plot_placeholder.pyplot(fig)
+        plot_placeholder.pyplot(fig, use_container_width=False)
 
         # -------- TELEGRAM --------
         if checktime() and not message_sent:
@@ -233,6 +237,7 @@ async def main():
             message_sent = True
         elif not checktime():
             message_sent = False
+
 
 # ---------------- ENTRY ----------------
 if __name__ == "__main__":
