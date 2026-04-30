@@ -44,7 +44,6 @@ def read_new_lines(f):
     return lines
 
 
-# ---------------- MAIN ----------------
 async def main():
 
     st.set_page_config(page_title="Monitor", layout="wide")
@@ -52,22 +51,20 @@ async def main():
 
     refresh_time = 30
 
-    # ------ find valid file to read ------
+    # -------- FILE --------
     if len(sys.argv) > 1:
-        file_name = './'+sys.argv[1]
-        if not os.path.exists(file_name):
-            print('This file does not exist! Select the data file', flush=True)
-            Tk().withdraw()
-            file_name = askopenfilename()
+        file_name = sys.argv[1]
     else:
-        print('Select the data file', flush=True)
-        Tk().withdraw()
-        file_name = askopenfilename()    
-            
-    f = open(file_name, 'r')
-    print(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+ ' Reading ' + file_name )
+        st.error("Provide file as argument")
+        return
 
-    # -------- time histos --------
+    if not os.path.exists(file_name):
+        st.error("File does not exist")
+        return
+
+    f = open(file_name, "r")
+
+    # -------- DATA --------
     bins = 256
     hist_p0 = np.zeros(bins, dtype=np.int32)
     hist_p1 = np.zeros(bins, dtype=np.int32)
@@ -75,15 +72,15 @@ async def main():
 
     x_axis = np.arange(bins)
 
-    rate_info = []            # last N points
-    rate_over_time = []       # plotted history (bounded)
+    rate_info = []
+    rate_over_time = []
 
     MAX_RATE_INFO = 10
     MAX_RATE_HISTORY = 40
 
     message_sent = False
 
-    # -------- plot --------
+    # -------- FIGURE --------
     fig, axes = plt.subplots(3, 3, figsize=(18, 12))
     plot_placeholder = st.empty()
 
@@ -91,9 +88,15 @@ async def main():
 
         time.sleep(refresh_time)
 
-        lines = read_new_lines(f)
+        # -------- READ INCREMENTALLY --------
+        lines = []
+        while True:
+            l = f.readline()
+            if not l:
+                break
+            lines.append(l)
 
-        # -------- check for new lines --------
+        # -------- STOP CHECK --------
         if not lines:
             if time.time() - os.path.getmtime(file_name) > 120:
                 await send_message(f"Data taking stopped in {POSTAZIONE}!")
@@ -101,6 +104,7 @@ async def main():
                 return
             continue
 
+        # -------- CLEAN LINES --------
         if not lines[0].startswith("_"):
             lines.pop(0)
         if lines and not lines[-1].endswith("\n"):
@@ -109,7 +113,7 @@ async def main():
         if not lines:
             continue
 
-
+        # -------- PROCESS --------
         for line in lines:
             try:
                 parts = line.split()
@@ -125,30 +129,23 @@ async def main():
                 if p2 != 4095:
                     hist_p2[p2 // 16] += 1
 
-            except Exception as e:
-                print("Broken line:")
-                print(line[i])
-                print("Error: ", e)
+            except Exception:
                 continue
 
-        # -------- RATE COMPUTATION --------
+        # -------- RATE --------
         last = lines[-1].split()
         event_n = int(last[1])
         time_from_start = float(last[2])
 
         if rate_info:
             elapsed = time_from_start - rate_info[0][1]
-            if elapsed > 0:
-                inst_rate = (event_n - rate_info[0][0]) / elapsed
-            else:
-                inst_rate = 0
+            inst_rate = (event_n - rate_info[0][0]) / elapsed if elapsed > 0 else 0
         else:
             inst_rate = 0
 
         avg_rate = event_n / time_from_start if time_from_start > 0 else 0
 
         rate_info.append((event_n, time_from_start))
-
         if len(rate_info) > MAX_RATE_INFO:
             rate_info.pop(0)
 
@@ -156,64 +153,59 @@ async def main():
         if len(rate_over_time) > MAX_RATE_HISTORY:
             rate_over_time.pop(0)
 
-       # -------- UPDATE PLOTS (CLEAN + CONSISTENT) --------
+        # -------- PLOTTING --------
         for ax in axes.flatten():
             ax.cla()
-        
+
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        
-        # --- compute common limits (important for alignment) ---
+
         max_count = max(
             hist_p0.max(),
             hist_p1.max(),
             hist_p2.max(),
-            1  # avoid zero issues
+            1
         )
-        
-        # -------- LINEAR HISTOS --------
+
+        # --- LINEAR (row 0) ---
         axes[0, 0].bar(x_axis, hist_p0)
-        axes[0, 0].set_title(f"P1 (Linear)\n{timestamp}")
         axes[0, 0].set_ylim(0, max_count)
-        
+        axes[0, 0].set_title(f"P1 (Linear)\n{timestamp}")
+
         axes[0, 1].bar(x_axis, hist_p1)
-        axes[0, 1].set_title(f"P2 (Linear)\n{timestamp}")
         axes[0, 1].set_ylim(0, max_count)
-        
+        axes[0, 1].set_title(f"P2 (Linear)\n{timestamp}")
+
         axes[0, 2].bar(x_axis, hist_p2)
-        axes[0, 2].set_title(f"P3 (Linear)\n{timestamp}")
         axes[0, 2].set_ylim(0, max_count)
-        
-        # -------- RATE --------
-        axes[1, 0].plot(rate_over_time)
-        axes[1, 0].set_title(f"Rate over time\n{timestamp}")
-        axes[1, 0].set_xlabel("Step")
-        axes[1, 0].set_ylabel("Hz")
-        
-        # -------- LOG HISTOS (ALIGNED WITH LINEAR) --------
+        axes[0, 2].set_title(f"P3 (Linear)\n{timestamp}")
+
+        # --- LOG (row 1) ---
         for i, hist in enumerate([hist_p0, hist_p1, hist_p2]):
-            ax = axes[1, i+1]
-        
-            # avoid log(0) issues
+            ax = axes[1, i]
+
             hist_safe = np.where(hist == 0, 1, hist)
-        
+
             ax.bar(x_axis, hist_safe)
             ax.set_yscale("log")
-        
-            ax.set_ylim(1, max_count)  # <-- SAME upper limit → aligned
+            ax.set_ylim(1, max_count)
             ax.set_title(f"P{i+1} (Log)\n{timestamp}")
-        
-        # -------- OPTIONAL: clean bottom row --------
-        axes[2, 0].axis("off")
+
+        # --- RATE (row 2) ---
+        axes[2, 0].plot(rate_over_time)
+        axes[2, 0].set_title(f"Rate over time\n{timestamp}")
+        axes[2, 0].set_xlabel("Step")
+        axes[2, 0].set_ylabel("Hz")
+
         axes[2, 1].axis("off")
         axes[2, 2].axis("off")
-        
-        # -------- GLOBAL TITLE --------
+
+        # --- GLOBAL TITLE ---
         fig.suptitle(
             f"Events: {event_n} | Avg: {avg_rate:.2f} Hz | Inst: {inst_rate:.2f} Hz",
             fontsize=16
         )
-        
-        # -------- DRAW --------
+
+        # --- DRAW ---
         plot_placeholder.pyplot(fig)
 
         # -------- TELEGRAM --------
@@ -221,7 +213,6 @@ async def main():
             await send_photo("screenR.jpg",
                              f"{POSTAZIONE} data taking is ongoing")
             message_sent = True
-
         elif not checktime():
             message_sent = False
 
