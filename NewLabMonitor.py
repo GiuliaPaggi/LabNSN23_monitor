@@ -62,7 +62,7 @@ async def main():
         st.error("File does not exist")
         return
 
-    f = open(file_name, "r")
+        f = open(file_name, "r")
 
     # -------- DATA --------
     bins = 256
@@ -78,12 +78,17 @@ async def main():
     MAX_RATE_INFO = 10
     MAX_RATE_HISTORY = 40
 
+    # rate sampling control (10 min)
+    loop_counter = 0
+    POINT_EVERY_N_LOOPS = int(600 / refresh_time)  # 600s = 10 min
+
     message_sent = False
 
     # -------- FIGURE --------
     fig, axes = plt.subplots(3, 3, figsize=(18, 12))
     plot_placeholder = st.empty()
 
+    # -------- LOOP --------
     while True:
 
         time.sleep(refresh_time)
@@ -149,9 +154,12 @@ async def main():
         if len(rate_info) > MAX_RATE_INFO:
             rate_info.pop(0)
 
-        rate_over_time.append(inst_rate)
-        if len(rate_over_time) > MAX_RATE_HISTORY:
-            rate_over_time.pop(0)
+        # --- sample every 10 minutes ---
+        loop_counter += 1
+        if loop_counter % POINT_EVERY_N_LOOPS == 0:
+            rate_over_time.append(inst_rate)
+            if len(rate_over_time) > MAX_RATE_HISTORY:
+                rate_over_time.pop(0)
 
         # -------- PLOTTING --------
         for ax in axes.flatten():
@@ -159,42 +167,46 @@ async def main():
 
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        max_count = max(
-            hist_p0.max(),
-            hist_p1.max(),
-            hist_p2.max(),
-            1
-        )
+        # common x ticks
+        xticks = np.arange(0, bins + 1, 32)
+        xticklabels = [str(i * 16) for i in range(0, bins + 1, 32)]
 
         # --- LINEAR (row 0) ---
-        axes[0, 0].bar(x_axis, hist_p0)
-        axes[0, 0].set_ylim(0, max_count)
-        axes[0, 0].set_title(f"P1 (Linear)\n{timestamp}")
-
-        axes[0, 1].bar(x_axis, hist_p1)
-        axes[0, 1].set_ylim(0, max_count)
-        axes[0, 1].set_title(f"P2 (Linear)\n{timestamp}")
-
-        axes[0, 2].bar(x_axis, hist_p2)
-        axes[0, 2].set_ylim(0, max_count)
-        axes[0, 2].set_title(f"P3 (Linear)\n{timestamp}")
+        for i, hist in enumerate([hist_p0, hist_p1, hist_p2]):
+            ax = axes[0, i]
+            ax.bar(x_axis, hist)
+            ax.set_title(f"P{i+1} (Linear)\n{timestamp}")
+            ax.set_xticks(xticks)
+            ax.set_xticklabels(xticklabels)
+            ax.set_xlabel("TDC count")
+            ax.set_ylabel("Entries")
 
         # --- LOG (row 1) ---
         for i, hist in enumerate([hist_p0, hist_p1, hist_p2]):
             ax = axes[1, i]
 
-            hist_safe = np.where(hist == 0, 1, hist)
+            mask = hist > 0
+            if np.any(mask):
+                ax.bar(x_axis[mask], hist[mask])
 
-            ax.bar(x_axis, hist_safe)
             ax.set_yscale("log")
-            ax.set_ylim(1, max_count)
             ax.set_title(f"P{i+1} (Log)\n{timestamp}")
+            ax.set_xticks(xticks)
+            ax.set_xticklabels(xticklabels)
+            ax.set_xlabel("TDC count")
+            ax.set_ylabel("Entries")
 
         # --- RATE (row 2) ---
-        axes[2, 0].plot(rate_over_time)
-        axes[2, 0].set_title(f"Rate over time\n{timestamp}")
-        axes[2, 0].set_xlabel("Step")
+        axes[2, 0].plot(rate_over_time, marker='o')
+        axes[2, 0].set_title(f"Rate (1 point / 10 min)\n{timestamp}")
+        axes[2, 0].set_xlabel("Time [10 min steps]")
         axes[2, 0].set_ylabel("Hz")
+
+        if rate_over_time:
+            ymin = min(rate_over_time) * 0.9
+            ymax = max(rate_over_time) * 1.1
+            if ymin != ymax:
+                axes[2, 0].set_ylim(ymin, ymax)
 
         axes[2, 1].axis("off")
         axes[2, 2].axis("off")
@@ -205,7 +217,6 @@ async def main():
             fontsize=16
         )
 
-        # --- DRAW ---
         plot_placeholder.pyplot(fig)
 
         # -------- TELEGRAM --------
@@ -215,7 +226,6 @@ async def main():
             message_sent = True
         elif not checktime():
             message_sent = False
-
 
 # ---------------- ENTRY ----------------
 if __name__ == "__main__":
