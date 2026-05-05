@@ -177,7 +177,10 @@ async def main():
 
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        xticks = np.arange(0, max_bin + 1, 256) 
+        tick_step = 512
+        tick_step_bins = tick_step // bin_size
+        xticks = np.arange(0, max_bin + 1, tick_step_bins)
+        xticklabels = [str(i * tick_step) for i in range(len(xticks))]
 
         # --- LINEAR (row 0) ---
         for i, hist in enumerate([hist_p0, hist_p1, hist_p2]):
@@ -185,7 +188,8 @@ async def main():
             ax.bar(x_axis, hist, width=1)
             ax.set_title(f"P{i+1} (Linear)\n{timestamp}")
             ax.set_xticks(xticks)
-            ax.set_xlim(0, max_bin)
+            ax.set_xticklabels(xticklabels)
+            ax.set_xlim(0, bins)
             ax.set_xlabel("TDC count")
             ax.set_ylabel("Entries")
 
@@ -200,7 +204,8 @@ async def main():
             ax.set_yscale("log")
             ax.set_title(f"P{i+1} (Log)\n{timestamp}")
             ax.set_xticks(xticks)
-            ax.set_xlim(0, max_bin)
+            ax.set_xticklabels(xticklabels)
+            ax.set_xlim(0, bins)
             ax.set_xlabel("TDC count")
             ax.set_ylabel("Entries")
 
