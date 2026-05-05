@@ -71,6 +71,7 @@ async def main():
     # -------- DATA --------
     bin_size=32
     bins = int(4096/bin_size)
+    max_bin = 4096
     hist_p0 = np.zeros(bins, dtype=np.int32)
     hist_p1 = np.zeros(bins, dtype=np.int32)
     hist_p2 = np.zeros(bins, dtype=np.int32)
@@ -172,9 +173,7 @@ async def main():
 
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        # common x ticks
-        xticks = np.arange(0, bins + 1, 32)
-        xticklabels = [str(i * 16) for i in range(0, bins + 1, 32)]
+        x_axis = np.arange(max_bin)
 
         # --- LINEAR (row 0) ---
         for i, hist in enumerate([hist_p0, hist_p1, hist_p2]):
@@ -182,7 +181,7 @@ async def main():
             ax.bar(x_axis, hist, width=1)
             ax.set_title(f"P{i+1} (Linear)\n{timestamp}")
             ax.set_xticks(xticks)
-            ax.set_xticklabels(xticklabels)
+            ax.set_xlim(0, max_bin)
             ax.set_xlabel("TDC count")
             ax.set_ylabel("Entries")
 
@@ -197,7 +196,7 @@ async def main():
             ax.set_yscale("log")
             ax.set_title(f"P{i+1} (Log)\n{timestamp}")
             ax.set_xticks(xticks)
-            ax.set_xticklabels(xticklabels)
+            ax.set_xlim(0, max_bin)
             ax.set_xlabel("TDC count")
             ax.set_ylabel("Entries")
 
