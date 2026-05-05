@@ -15,7 +15,7 @@ from tkinter.filedialog import askopenfilename
 # ---------------- TELEGRAM ----------------
 BOT_TOKEN = "xxxx"
 CHAT_ID = "xxxx"
-POSTAZIONE = "Fake"
+POSTAZIONE = "fake"
 
 bot = telegram.Bot(token=BOT_TOKEN)
 
@@ -69,7 +69,8 @@ async def main():
     print(datetime.now().strftime("%Y/%m/%d - %H:%M:%S")+ ' Reading ' + file_name )
     
     # -------- DATA --------
-    bins = 256
+    bin_size=32
+    bins = int(4096/bin_size)
     hist_p0 = np.zeros(bins, dtype=np.int32)
     hist_p1 = np.zeros(bins, dtype=np.int32)
     hist_p2 = np.zeros(bins, dtype=np.int32)
@@ -132,11 +133,11 @@ async def main():
                 p2 = int(parts[5], 16)
 
                 if p0 != 4095:
-                    hist_p0[p0 // 16] += 1
+                    hist_p0[p0 // bin_size] += 1
                 if p1 != 4095:
-                    hist_p1[p1 // 16] += 1
+                    hist_p1[p1 // bin_size] += 1
                 if p2 != 4095:
-                    hist_p2[p2 // 16] += 1
+                    hist_p2[p2 // bin_size] += 1
 
             except Exception:
                 continue
@@ -178,7 +179,7 @@ async def main():
         # --- LINEAR (row 0) ---
         for i, hist in enumerate([hist_p0, hist_p1, hist_p2]):
             ax = axes[0, i]
-            ax.bar(x_axis, hist)
+            ax.bar(x_axis, hist, width=1)
             ax.set_title(f"P{i+1} (Linear)\n{timestamp}")
             ax.set_xticks(xticks)
             ax.set_xticklabels(xticklabels)
@@ -191,7 +192,7 @@ async def main():
 
             mask = hist > 0
             if np.any(mask):
-                ax.bar(x_axis[mask], hist[mask])
+                ax.bar(x_axis[mask], hist[mask], width=1)
 
             ax.set_yscale("log")
             ax.set_title(f"P{i+1} (Log)\n{timestamp}")
@@ -228,11 +229,11 @@ async def main():
             hspace=0.6,   
             wspace=0.3
         )
-        plot_placeholder.pyplot(fig, use_container_width=False)
+        plot_placeholder.pyplot(fig, width='content')
 
         # -------- TELEGRAM --------
         if checktime() and not message_sent:
-            await send_photo("screenR.jpg",
+            await send_photo(r"C:\Users\luigi.guiducci3\OneDrive - Alma Mater Studiorum Università di Bologna\LabNSN2_2026\Monitoring\screenB.jpg",
                              f"{POSTAZIONE} data taking is ongoing")
             message_sent = True
         elif not checktime():
