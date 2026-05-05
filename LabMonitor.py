@@ -10,12 +10,16 @@ import streamlit as st
 import telegram
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
-
+import configparser
 
 # ---------------- TELEGRAM ----------------
-BOT_TOKEN = "xxxx"
-CHAT_ID = "xxxx"
-POSTAZIONE = "fake"
+config = configparser.ConfigParser()
+config.read('config.ini')
+cfg = config['CONFIG']
+
+BOT_TOKEN = cfg.get('bot_token')
+CHAT_ID = cfg.get('chat_id')
+POSTAZIONE= cfg.get('postazione')
 
 bot = telegram.Bot(token=BOT_TOKEN)
 
@@ -76,7 +80,7 @@ async def main():
     hist_p1 = np.zeros(bins, dtype=np.int32)
     hist_p2 = np.zeros(bins, dtype=np.int32)
 
-    x_axis = np.arange(bins)
+    x_axis = np.arange(max_bin)
 
     rate_info = []
     rate_over_time = []
@@ -173,7 +177,7 @@ async def main():
 
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        x_axis = np.arange(max_bin)
+        xticks = np.arange(0, max_bin + 1, 256) 
 
         # --- LINEAR (row 0) ---
         for i, hist in enumerate([hist_p0, hist_p1, hist_p2]):
