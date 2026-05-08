@@ -1,6 +1,6 @@
-# LabNSN23 Monitor
+# LabNSN Monitor
 
-A real-time data acquisition (DAQ) monitor built with [Streamlit](https://streamlit.io/) for the **Nuclear & Subnuclear Physics (N&SN) Laboratory 2** exam at the University of Bologna.
+A real-time data acquisition (DAQ) monitor built with [Streamlit](https://streamlit.io/) for **Nuclear & Subnuclear Physics (N&SN) Laboratory 2**.
 
 The monitor reads a live TDC (Time-to-Digital Converter) data file, displays continuously-updated histograms and rate plots in a web dashboard, detects acquisition stalls, and sends Telegram notifications to the lab team.
 
