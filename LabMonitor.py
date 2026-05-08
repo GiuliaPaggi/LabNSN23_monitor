@@ -80,7 +80,7 @@ async def main():
     hist_p1 = np.zeros(bins, dtype=np.int32)
     hist_p2 = np.zeros(bins, dtype=np.int32)
 
-    x_axis = np.arange(max_bin)
+    x_axis = np.arange(bins)
 
     rate_info = []
     rate_over_time = []
